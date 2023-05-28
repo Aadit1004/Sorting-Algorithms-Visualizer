@@ -84,5 +84,7 @@ int main() {
 		EndDrawing();
 
 	}
+	bubbleT.join();
+	CloseWindow();
 	return 0;
 }
