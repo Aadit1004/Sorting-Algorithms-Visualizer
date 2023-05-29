@@ -17,7 +17,10 @@ int selectionVal2;
 int selectionValMin;
 
 bool doneSortingMerge = false;
-int mergeVal;
+int mergeVal1;
+int mergeVal2;
+int mergeVal3;
+int mergeVal4;
 
 bool doneSortingQuick = false;
 int quickVal;
@@ -34,6 +37,12 @@ int bubbleHeights[49] = { 155, 31, 74, 117, 24, 19, 168, 113, 181,
 			21, 129 };
 
 int selectionHeights[49] = { 155, 31, 74, 117, 24, 19, 168, 113, 181,
+			98, 23, 48, 20, 121, 26, 167, 60, 92, 5, 36, 32,
+			54, 85, 150, 20, 27, 112, 15, 73, 165, 8, 100, 15, 132,
+			95, 109, 47, 75, 74, 162, 43, 44, 99, 3, 6, 121, 32,
+			21, 129 };
+
+int mergeHeights[49] = { 155, 31, 74, 117, 24, 19, 168, 113, 181,
 			98, 23, 48, 20, 121, 26, 167, 60, 92, 5, 36, 32,
 			54, 85, 150, 20, 27, 112, 15, 73, 165, 8, 100, 15, 132,
 			95, 109, 47, 75, 74, 162, 43, 44, 99, 3, 6, 121, 32,
@@ -57,7 +66,7 @@ void bubbleSort() {
 	}
 }
 
-void performSelectionSort() {
+void selectionSort() {
 	for (int i = 0; i < size - 1; ++i) {
 		int minIndex = i;
 		selectionVal1 = i;
@@ -76,14 +85,88 @@ void performSelectionSort() {
 	}
 }
 
+// helper for merge sort, implementation from geeksforgeeks
+void merge(int array[], int const left, int const mid, int const right) {
+	auto const subArrayOne = mid - left + 1;
+	auto const subArrayTwo = right - mid;
+
+	// Create temp arrays
+	auto* leftArray = new int[subArrayOne],
+		* rightArray = new int[subArrayTwo];
+
+	// Copy data to temp arrays leftArray[] and rightArray[]
+	for (auto i = 0; i < subArrayOne; i++)
+		leftArray[i] = array[left + i];
+	for (auto j = 0; j < subArrayTwo; j++)
+		rightArray[j] = array[mid + 1 + j];
+
+	auto indexOfSubArrayOne
+		= 0, // Initial index of first sub-array
+		indexOfSubArrayTwo
+		= 0; // Initial index of second sub-array
+	int indexOfMergedArray
+		= left; // Initial index of merged array
+
+	// Merge the temp arrays back into array[left..right]
+	while (indexOfSubArrayOne < subArrayOne
+		&& indexOfSubArrayTwo < subArrayTwo) {
+		if (leftArray[indexOfSubArrayOne]
+			<= rightArray[indexOfSubArrayTwo]) {
+			array[indexOfMergedArray]
+				= leftArray[indexOfSubArrayOne];
+			indexOfSubArrayOne++;
+		}
+		else {
+			array[indexOfMergedArray]
+				= rightArray[indexOfSubArrayTwo];
+			indexOfSubArrayTwo++;
+		}
+		indexOfMergedArray++;
+	}
+	// Copy the remaining elements of
+	// left[], if there are any
+	while (indexOfSubArrayOne < subArrayOne) {
+		array[indexOfMergedArray]
+			= leftArray[indexOfSubArrayOne];
+		indexOfSubArrayOne++;
+		indexOfMergedArray++;
+	}
+	// Copy the remaining elements of
+	// right[], if there are any
+	while (indexOfSubArrayTwo < subArrayTwo) {
+		array[indexOfMergedArray]
+			= rightArray[indexOfSubArrayTwo];
+		indexOfSubArrayTwo++;
+		indexOfMergedArray++;
+	}
+	delete[] leftArray;
+	delete[] rightArray;
+}
+
+void mergeSort(int array[], int const begin, int const end) {
+	if (begin >= end)
+		return; // Returns recursively
+
+	auto mid = begin + (end - begin) / 2;
+	mergeSort(array, begin, mid);
+	mergeSort(array, mid + 1, end);
+	merge(array, begin, mid, end);
+	std::this_thread::sleep_for(std::chrono::milliseconds(210));
+}
+
 void bubbleSortThreadFn() {
 	bubbleSort();
 	doneSortingBubble = true;
 }
 
 void selectionSortThreadFn() {
-	performSelectionSort();
+	selectionSort();
 	doneSortingSelection = true;
+}
+
+void mergeSortThreadFn() {
+	mergeSort(mergeHeights, 0, size - 1);
+	doneSortingMerge = true;
 }
 
 int main() {
@@ -94,6 +177,7 @@ int main() {
 
 	std::thread selectionT(selectionSortThreadFn);
 	std::thread bubbleT(bubbleSortThreadFn);
+	std::thread mergeT(mergeSortThreadFn);
 
 	while (!WindowShouldClose()) {
 		BeginDrawing();
@@ -131,12 +215,26 @@ int main() {
 				DrawRectangle(((winWidth / 2) + 2) + (i * 8), ((winHeight / 2) - 5) - selectionHeights[i], rectWidth, selectionHeights[i], temp);
 			}
 		}
+		if (doneSortingMerge) {
+			DrawText("Merge Sort - Sorted!", 5, ((winHeight / 2) + 5), 22, DARKPURPLE);
+			for (int i = 0; i < size; i++) {
+				DrawRectangle(2 + (i * 8), winHeight - mergeHeights[i], rectWidth, mergeHeights[i], Color{ 53, 181, 172, 255 });
+			}
+		}
+		else {
+			DrawText("Merge Sort", 5, ((winHeight / 2) + 5), 22, DARKPURPLE);
+			for (int i = 0; i < size; i++) {
+				DrawRectangle(2 + (i * 8), winHeight - mergeHeights[i], rectWidth, mergeHeights[i], Color{ 53, 181, 172, 255 });
+			}
+			
+		}
 
 		EndDrawing();
 
 	}
 	bubbleT.join();
 	selectionT.join();
+	mergeT.join();
 	CloseWindow();
 	return 0;
 }
