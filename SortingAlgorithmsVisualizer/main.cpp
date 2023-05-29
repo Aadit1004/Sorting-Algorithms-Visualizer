@@ -17,13 +17,11 @@ int selectionVal2;
 int selectionValMin;
 
 bool doneSortingMerge = false;
-int mergeVal1;
-int mergeVal2;
-int mergeVal3;
-int mergeVal4;
+int mergeVal;
 
-bool doneSortingQuick = false;
-int quickVal;
+bool doneSortingInsertion = false;
+int insertionVal1;
+int insertionVal2;
 
 void drawCross() {
 	DrawRectangle(0, (winHeight / 2) - 5, winWidth, 5, BLACK);
@@ -43,6 +41,12 @@ int selectionHeights[49] = { 155, 31, 74, 117, 24, 19, 168, 113, 181,
 			21, 129 };
 
 int mergeHeights[49] = { 155, 31, 74, 117, 24, 19, 168, 113, 181,
+			98, 23, 48, 20, 121, 26, 167, 60, 92, 5, 36, 32,
+			54, 85, 150, 20, 27, 112, 15, 73, 165, 8, 100, 15, 132,
+			95, 109, 47, 75, 74, 162, 43, 44, 99, 3, 6, 121, 32,
+			21, 129 };
+
+int insertionHeights[49] = { 155, 31, 74, 117, 24, 19, 168, 113, 181,
 			98, 23, 48, 20, 121, 26, 167, 60, 92, 5, 36, 32,
 			54, 85, 150, 20, 27, 112, 15, 73, 165, 8, 100, 15, 132,
 			95, 109, 47, 75, 74, 162, 43, 44, 99, 3, 6, 121, 32,
@@ -91,8 +95,7 @@ void merge(int array[], int const left, int const mid, int const right) {
 	auto const subArrayTwo = right - mid;
 
 	// Create temp arrays
-	auto* leftArray = new int[subArrayOne],
-		* rightArray = new int[subArrayTwo];
+	auto* leftArray = new int[subArrayOne],* rightArray = new int[subArrayTwo];
 
 	// Copy data to temp arrays leftArray[] and rightArray[]
 	for (auto i = 0; i < subArrayOne; i++)
@@ -108,34 +111,29 @@ void merge(int array[], int const left, int const mid, int const right) {
 		= left; // Initial index of merged array
 
 	// Merge the temp arrays back into array[left..right]
-	while (indexOfSubArrayOne < subArrayOne
-		&& indexOfSubArrayTwo < subArrayTwo) {
-		if (leftArray[indexOfSubArrayOne]
-			<= rightArray[indexOfSubArrayTwo]) {
-			array[indexOfMergedArray]
-				= leftArray[indexOfSubArrayOne];
+	while ((indexOfSubArrayOne < subArrayOne) && (indexOfSubArrayTwo < subArrayTwo)) {
+		if (leftArray[indexOfSubArrayOne] <= rightArray[indexOfSubArrayTwo]) {
+			array[indexOfMergedArray] = leftArray[indexOfSubArrayOne];
 			indexOfSubArrayOne++;
 		}
 		else {
-			array[indexOfMergedArray]
-				= rightArray[indexOfSubArrayTwo];
+			array[indexOfMergedArray] = rightArray[indexOfSubArrayTwo];
 			indexOfSubArrayTwo++;
 		}
+		mergeVal = indexOfMergedArray;
 		indexOfMergedArray++;
 	}
 	// Copy the remaining elements of
 	// left[], if there are any
 	while (indexOfSubArrayOne < subArrayOne) {
-		array[indexOfMergedArray]
-			= leftArray[indexOfSubArrayOne];
+		array[indexOfMergedArray] = leftArray[indexOfSubArrayOne];
 		indexOfSubArrayOne++;
 		indexOfMergedArray++;
 	}
 	// Copy the remaining elements of
 	// right[], if there are any
 	while (indexOfSubArrayTwo < subArrayTwo) {
-		array[indexOfMergedArray]
-			= rightArray[indexOfSubArrayTwo];
+		array[indexOfMergedArray] = rightArray[indexOfSubArrayTwo];
 		indexOfSubArrayTwo++;
 		indexOfMergedArray++;
 	}
@@ -144,14 +142,29 @@ void merge(int array[], int const left, int const mid, int const right) {
 }
 
 void mergeSort(int array[], int const begin, int const end) {
-	if (begin >= end)
-		return; // Returns recursively
-
+	if (begin >= end) return; // Returns recursively
 	auto mid = begin + (end - begin) / 2;
 	mergeSort(array, begin, mid);
 	mergeSort(array, mid + 1, end);
 	merge(array, begin, mid, end);
-	std::this_thread::sleep_for(std::chrono::milliseconds(210));
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
+
+void insertionSort() {
+	int i, key, j;
+	for (i = 1; i < size; i++) {
+		insertionVal1 = i;
+		key = insertionHeights[i];
+		j = i - 1;
+
+		while (j >= 0 && insertionHeights[j] > key) {
+			insertionHeights[j + 1] = insertionHeights[j];
+			j = j - 1;
+			insertionVal2 = j;
+			std::this_thread::sleep_for(std::chrono::milliseconds(15));
+		}
+		insertionHeights[j + 1] = key;
+	}
 }
 
 void bubbleSortThreadFn() {
@@ -169,6 +182,11 @@ void mergeSortThreadFn() {
 	doneSortingMerge = true;
 }
 
+void insertionSortThreadFn() {
+	insertionSort();
+	doneSortingInsertion = true;
+}
+
 int main() {
 
 	InitWindow(winWidth, winHeight, "Sorting Algorithms Visualizer");
@@ -178,6 +196,7 @@ int main() {
 	std::thread selectionT(selectionSortThreadFn);
 	std::thread bubbleT(bubbleSortThreadFn);
 	std::thread mergeT(mergeSortThreadFn);
+	std::thread insertionT(insertionSortThreadFn);
 
 	while (!WindowShouldClose()) {
 		BeginDrawing();
@@ -202,7 +221,7 @@ int main() {
 		if (doneSortingSelection) {
 			DrawText("Selection Sort - Sorted!", (winWidth / 2) + 5, 5, 22, DARKPURPLE);
 			for (int i = 0; i < size; i++) {
-				DrawRectangle(((winWidth / 2) + 2) + (i * 8), ((winHeight / 2) - 5) - selectionHeights[i], rectWidth, selectionHeights[i], Color{ 53, 181, 172, 255 });
+				DrawRectangle(((winWidth / 2) + 7) + (i * 8), ((winHeight / 2) - 5) - selectionHeights[i], rectWidth, selectionHeights[i], Color{ 53, 181, 172, 255 });
 			}
 		}
 		else {
@@ -212,7 +231,7 @@ int main() {
 				if (i == selectionVal1) temp = RED;
 				if (i == selectionVal2) temp = DARKPURPLE;
 				if (i == selectionValMin) temp = DARKBROWN;
-				DrawRectangle(((winWidth / 2) + 2) + (i * 8), ((winHeight / 2) - 5) - selectionHeights[i], rectWidth, selectionHeights[i], temp);
+				DrawRectangle(((winWidth / 2) + 7) + (i * 8), ((winHeight / 2) - 5) - selectionHeights[i], rectWidth, selectionHeights[i], temp);
 			}
 		}
 		if (doneSortingMerge) {
@@ -224,9 +243,25 @@ int main() {
 		else {
 			DrawText("Merge Sort", 5, ((winHeight / 2) + 5), 22, DARKPURPLE);
 			for (int i = 0; i < size; i++) {
-				DrawRectangle(2 + (i * 8), winHeight - mergeHeights[i], rectWidth, mergeHeights[i], Color{ 53, 181, 172, 255 });
+				DrawRectangle(2 + (i * 8), winHeight - mergeHeights[i], rectWidth, mergeHeights[i], 
+					(i == mergeVal) ? RED : Color{ 53, 181, 172, 255 });
 			}
 			
+		}
+		if (doneSortingInsertion) {
+			DrawText("Insertion Sort - Sorted!", (winWidth / 2) + 5, ((winHeight / 2) + 5), 22, DARKPURPLE);
+			for (int i = 0; i < size; i++) {
+				DrawRectangle(((winWidth / 2) + 7) + (i * 8), winHeight - insertionHeights[i], rectWidth, insertionHeights[i], Color{ 53, 181, 172, 255 });
+			}
+		}
+		else {
+			DrawText("Insertion Sort", (winWidth / 2) + 5, ((winHeight / 2) + 5), 22, DARKPURPLE);
+			for (int i = 0; i < size; i++) {
+				Color temp = Color{ 53, 181, 172, 255 };
+				if (i == insertionVal1) temp = RED;
+				if (i == insertionVal2) temp = DARKPURPLE;
+				DrawRectangle(((winWidth / 2) + 7) + (i * 8), winHeight - insertionHeights[i], rectWidth, insertionHeights[i], temp);
+			}
 		}
 
 		EndDrawing();
@@ -235,6 +270,7 @@ int main() {
 	bubbleT.join();
 	selectionT.join();
 	mergeT.join();
+	insertionT.join();
 	CloseWindow();
 	return 0;
 }
