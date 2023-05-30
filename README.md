@@ -4,11 +4,3 @@ A sorting algorithm visualizer using to display and compare the time it takes to
 
 At the end of the project, I was content with how it turned out and how quickly I could implement everything. The main goal was to understand the Raylib library and it was fairly easy to use. The hardest issue
 I had was implementing threads and figuring out a way to display the 4 algorithms and to do the algorithms at the same time. With a lot of trial and error, I was able to find an easy way to make the multithreading to work for the algortihms.
-
-
-<!-- GIF of project -->
-
-<br>
-You can click below to see a snippet of the project.
-
-[![Click here to see a snippet of the project](https://img.youtube.com/vi/Z09_Jd_PI7Y/0.jpg)](https://www.youtube.com/watch?v=Z09_Jd_PI7Y)
